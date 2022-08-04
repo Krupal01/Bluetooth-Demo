@@ -2,6 +2,7 @@ package com.example.bluetoothdemo
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -12,16 +13,22 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import com.example.bluetoothdemo.launcher.rememberBluetoothLauncher
 import com.example.bluetoothdemo.ui.theme.BluetoothDemoTheme
@@ -39,9 +46,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             val context = LocalContext.current
             val bleLauncher = rememberBluetoothLauncher()
+            val pairedDevices = remember{ mutableStateListOf<BluetoothDevice>()}
             val blePermission = rememberPermissionState(permission = Manifest.permission.BLUETOOTH_CONNECT)
             bleLauncher.isEnable.let {
                 Log.i(TAG,"bluetooth enable")
+                Log.i(TAG,bluetoothAdapter.bondedDevices.toString())
+                pairedDevices.addAll(bluetoothAdapter.bondedDevices)
             }
 
             BluetoothDemoTheme {
@@ -116,8 +126,13 @@ class MainActivity : ComponentActivity() {
                                 Text(text = "stop bluetooth")
                             }
                         }
+                        LazyColumn(content = {
+                            item { Text(text = "Paired Deices" , fontSize = 20.sp, fontWeight = FontWeight.Bold ,modifier = Modifier.padding(5.dp)) }
+                            items(pairedDevices){item: BluetoothDevice ->
+                                Text(text = item.name , modifier = Modifier.padding(5.dp))
+                            }
+                        })
                     }
-
                 }
             }
         }
